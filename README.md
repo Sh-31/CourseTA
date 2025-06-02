@@ -42,16 +42,18 @@ CourseTA is an Agentic AI-powered teaching assistant that helps educators proces
    **Windows/macOS/Linux:**
    - Download and install from https://ollama.ai/
    - Or use the installation script:
+     
    ```bash
    curl -fsSL https://ollama.ai/install.sh | sh
    ```
    
    **Pull the recommended model:**
+   
    ```bash
    ollama pull qwen3:4b
    ```
 
-5. Set up your environment variables (API keys, etc.) in a `.env` file.
+6. Set up your environment variables (API keys, etc.) in a `.env` file.
 
    **Update `.env` with your credentials:**
    ```
@@ -96,7 +98,9 @@ The Question Generation agent follows a human-in-the-loop pattern with reflectio
 - **QuestionRewriter**: Manual refinement based on human feedback
 
 **Flow:**
-[Question Generation Graph Flow (LangGraph Studio)](docs/question_generation_graph_flow.mp4)
+
+https://github.com/user-attachments/assets/e5dd58b3-0490-490e-84f9-fe0d8717314f
+
 - Starts with question generation
 - Enters human feedback loop with interrupt
 - Router decides: `save` (END), `auto` (refiner), or `feedback` (rewriter)
@@ -115,7 +119,9 @@ The Summarization agent uses a two-stage approach with iterative refinement:
 - **Router**: Routes to save or continue refinement
 
 **Flow:**
-[Summarization Graph Flow (LangGraph Studio)](docs/summarization_graph_flow.mp4)
+
+https://github.com/user-attachments/assets/24eda08d-0358-468a-abbd-658a40ccc07e
+
 - Sequential processing: Main Points → Summary Writer → User Feedback
 - Feedback loop: Router directs to rewriter or completion
 - Rewriter loops back to user feedback for iterative improvement
@@ -133,7 +139,8 @@ The Q&A agent implements intelligent topic classification and retrieval:
 - **OffTopicResponse**: Handles questions outside the content scope
 
 **Flow:**
-[Question Answer Graph Flow (LangGraph Studio)](docs/question_answer_graph_flow.mp4)
+
+https://github.com/user-attachments/assets/838a07b2-2885-4d09-8b97-09e366753e83
 
 - Question classification with embedding-based relevance scoring
 - Conditional routing: on-topic questions go through retrieval pipeline
@@ -221,10 +228,10 @@ Generate questions from uploaded content with human-in-the-loop feedback.
 **Method:** `POST`
 
 **Request Body:**
-```json
+```jsonc
 {
   "asset_id": "uuid-string",
-  "question_type": "T/F" | "MCQ"
+  "question_type": "T/F"  // or "MCQ"
 }
 ```
 
@@ -233,18 +240,18 @@ Generate questions from uploaded content with human-in-the-loop feedback.
 - `question_type`: Question type - "T/F" for True/False or "MCQ" for Multiple Choice (required)
 
 **Response:**
-```json
+```jsonc 
 {
   "thread_id": "uuid-string",
   "status": "interrupted_for_feedback",
   "data_for_feedback": {
     "generated_question": "string",
-    "options": ["string"] | null,
+    "options": ["string"],  // or null
     "answer": "string",
     "explanation": "string",
     "message": "string"
   },
-  "current_state": {...}
+  "current_state": {}
 }
 ```
 
@@ -270,11 +277,11 @@ Provide feedback to refine generated questions or save the current question.
 - `feedback`: Feedback text, "auto" for automatic refinement, or "save" to finish (required)
 
 **Response:**
-```json
+```jsonc 
 {
   "thread_id": "uuid-string",
-  "status": "completed" | "interrupted_for_feedback",
-  "final_state": {...} | null
+  "status": "completed", // or "interrupted_for_feedback"
+  "final_state": {}  // or null
 }
 ```
 
