@@ -8,6 +8,10 @@ CourseTA is an Agentic AI-powered teaching assistant that helps educators proces
 - **Question Generation**: Create True/False or Multiple Choice questions from your content
 - **Content Summarization**: Extract main points and generate comprehensive summaries
 - **Question Answering**: Ask questions and get answers specific to your uploaded content
+  
+## Demo 
+
+https://github.com/user-attachments/assets/8f1c9efc-6a8f-4e66-9bed-5d1613c44022
 
 ## Requirements
 
