@@ -4,7 +4,6 @@ class Settings(BaseSettings):
     # API keys and tokens
     GROQ_API_KEY: str = None
     GOOGLE_API_KEY: str = None
-    TAVILY_API_KEY: str = None
     HUGGING_FACE_HUB_TOKEN: str = None
 
     # LangSmith configuration
