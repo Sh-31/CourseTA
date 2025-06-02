@@ -119,13 +119,8 @@ async def start_summarization_session_streaming(asset_id: str = Body(..., embed=
             error_details = traceback.format_exc()
             error_message = f"Error in summarization stream: {str(e)}"
             print(f"Error details: {error_details}")
-            
-            yield f'data: {json.dumps({
-                "event": "error", 
-                "thread_id": thread_id, 
-                "detail": error_message,
-                "error_type": e.__class__.__name__
-            })}\n\n'
+            yield f'data: {json.dumps({"event": "error", "thread_id": thread_id, "detail": error_message, "error_type": e.__class__.__name__})}\n\n'
+        
         finally:
             payload = {"event": "stream_end", "thread_id": str(thread_id), "status_update": "Stream ended"}
             yield f'data: {json.dumps(payload)}\n\n'
@@ -214,13 +209,8 @@ async def provide_feedback_to_summarization_streaming(
             error_message = f"Error in feedback stream: {str(e)}"
 
             print(f"Error details: {error_details}")
-
-            yield f'data: {json.dumps({
-                "event": "error", 
-                "thread_id": thread_id, 
-                "detail": error_message,
-                "error_type": e.__class__.__name__
-            })}\n\n'
+            yield f'data: {json.dumps({"event": "error", "thread_id": thread_id, "detail": error_message,"error_type": e.__class__.__name__})}\n\n'
+        
         finally:
             payload = {"event": "stream_end", "thread_id": thread_id, "status_update": "Stream ended"}
             yield f'data: {json.dumps(payload)}\n\n'

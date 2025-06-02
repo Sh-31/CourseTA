@@ -72,3 +72,28 @@ async def upload_file_api(file: UploadFile = File(...)):
     
     finally:
         file.file.close()
+
+@router.get("/get_extracted_text/{asset_id}")
+async def get_extracted_text(asset_id: str):
+    """
+    Retrieve the extracted text for a given asset ID.
+    """
+    if not asset_id.strip():
+        raise HTTPException(status_code=400, detail="Asset ID is required.")
+    
+    text_path = os.path.join(ASSETS_DIR, asset_id.strip(), "extracted_text.txt")
+    
+    if not os.path.exists(text_path):
+        raise HTTPException(status_code=404, detail=f"Extracted text not found for asset ID: {asset_id}")
+    
+    try:
+        with open(text_path, "r", encoding="utf-8") as f:
+            extracted_text = f.read()
+        
+        return {
+            "asset_id": asset_id,
+            "extracted_text": extracted_text
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading extracted text: {str(e)}")
