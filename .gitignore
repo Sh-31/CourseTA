@@ -2,10 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+__pycache__
 # C extensions
+assets/*
 *.so
-
+.env
+.langgraph_api
 # Distribution / packaging
 .Python
 build/
