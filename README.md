@@ -96,6 +96,7 @@ The Question Generation agent follows a human-in-the-loop pattern with reflectio
 - **QuestionRewriter**: Manual refinement based on human feedback
 
 **Flow:**
+[Question Generation Graph Flow (LangGraph Studio)](docs/question_generation_graph_flow.mp4)
 - Starts with question generation
 - Enters human feedback loop with interrupt
 - Router decides: `save` (END), `auto` (refiner), or `feedback` (rewriter)
@@ -114,6 +115,7 @@ The Summarization agent uses a two-stage approach with iterative refinement:
 - **Router**: Routes to save or continue refinement
 
 **Flow:**
+[Summarization Graph Flow (LangGraph Studio)](docs/summarization_graph_flow.mp4)
 - Sequential processing: Main Points → Summary Writer → User Feedback
 - Feedback loop: Router directs to rewriter or completion
 - Rewriter loops back to user feedback for iterative improvement
@@ -131,6 +133,8 @@ The Q&A agent implements intelligent topic classification and retrieval:
 - **OffTopicResponse**: Handles questions outside the content scope
 
 **Flow:**
+[Question Answer Graph Flow (LangGraph Studio)](docs/question_answer_graph_flow.mp4)
+
 - Question classification with embedding-based relevance scoring
 - Conditional routing: on-topic questions go through retrieval pipeline
 - Off-topic questions receive appropriate redirect responses
