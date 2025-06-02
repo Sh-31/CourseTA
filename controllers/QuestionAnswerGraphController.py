@@ -130,7 +130,6 @@ Question: {question}
     
     full_response = ""
     
-    # Add empty AI message to start streaming
     state["messages"].append(AIMessage(content=""))
     
 
@@ -154,16 +153,15 @@ Question: {question}
     yield state
 
 def off_topic_response(state: QuestionAnswerState): 
-    state["messages"].append(AIMessage(content="I'm sorry! I cannot answer this question!"))
+    state["messages"].append(AIMessage(content="Seems that your question is not related to the uploaded content. I cannot answer this question!"))
     return state
 
 async def off_topic_response_streaming(state: QuestionAnswerState):
     """Streaming version of off-topic response"""
-    response_text = "I'm sorry! I cannot answer this question!"
+    response_text = "Seems that your question is not related to the uploaded content. I cannot answer this question!"
     state["messages"].append(AIMessage(content=""))
-    
+
     print("Streaming off-topic response...")
-    # Stream the off-topic message character by character
     for i, char in enumerate(response_text):
         state["messages"][-1] = AIMessage(content=response_text[i])
         yield state
@@ -197,13 +195,13 @@ stream_qa_graph = stream_graph.compile(checkpointer=checkpointer)
 
 qa_graph = StateGraph(QuestionAnswerState)
 
-qa_graph.add_node("topic_decision", question_classifier)
+qa_graph.add_node("question_classifier", question_classifier)
 qa_graph.add_node("off_topic_response", off_topic_response)
 qa_graph.add_node("retrieve", retrieve)
 qa_graph.add_node("generate_answer", generate_answer)
 
 qa_graph.add_conditional_edges(
-    "topic_decision", 
+    "question_classifier", 
     on_topic_router, 
     {
         "on_topic": "retrieve", 
@@ -214,7 +212,7 @@ qa_graph.add_conditional_edges(
 qa_graph.add_edge("retrieve", "generate_answer")
 qa_graph.add_edge("generate_answer", END)
 qa_graph.add_edge("off_topic_response", END)
-qa_graph.add_edge(START, "topic_decision")
+qa_graph.add_edge(START, "question_classifier")
 
 qa_graph = qa_graph.compile()
 
