@@ -5,7 +5,7 @@
     "Summary_Generation_Graph": "./SummarizerGenGraphController.py:summarizer_graph",
     "Answer_Generation_Graph": "./QuestionAnswerGraphController.py:qa_graph"
   },
-  "env": "D:\\Repo\\CourseTA\\.env",
+  "env": "",
   "python_version": "3.11",
   "dependencies": [
     "."

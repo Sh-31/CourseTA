@@ -13,6 +13,8 @@ CourseTA is an AI-powered teaching assistant that helps educators process educat
 
 - Python 3.9+
 - Dependencies listed in `requirements.txt`
+- FFmpeg (for audio/video processing)
+- Ollama (optional, for local LLM support)
 
 ## Installation
 
@@ -22,37 +24,38 @@ CourseTA is an AI-powered teaching assistant that helps educators process educat
    cd CourseTA
    ```
 
-2. Install the required packages:
+2. Install FFmpeg:
+   
+   **Linux (Ubuntu/Debian):**
+   ```bash
+   sudo apt update
+   sudo apt install ffmpeg
+   ```
+
+3. Install the required Python packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Set up your environment variables (API keys, etc.) in a `.env` file:
+4. (Optional) Install Ollama for local LLM support:
+   
+   **Windows/macOS/Linux:**
+   - Download and install from https://ollama.ai/
+   - Or use the installation script:
+   ```bash
+   curl -fsSL https://ollama.ai/install.sh | sh
    ```
-   OPENAI_API_KEY=your_api_key_here
+   
+   **Pull the recommended model:**
+   ```bash
+   ollama pull qwen2.5:1.5b
    ```
 
+5. Set up your environment variables (API keys, etc.) in a `.env` file.
+ 
 ## Usage
 
 ### Running the Application
-
-Run the all-in-one launcher:
-
-```bash
-python run_app.py
-```
-
-On Windows, you can also use the PowerShell script:
-```powershell
-./run.ps1
-```
-
-This will start both the backend API server and the Gradio web interface.
-
-- Backend API: http://127.0.0.1:8000
-- Gradio UI: http://127.0.0.1:7860
-
-### Alternative: Running Separately
 
 1. Start the FastAPI backend:
    ```bash
