@@ -63,6 +63,15 @@ custom_css = """
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4) !important;
 }
+
+.extracted-text {
+    font-family: 'Courier New', monospace !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    max-height: 600px !important;
+    overflow-y: auto !important;
+}
 """
 
 class GradioUI:
@@ -70,10 +79,11 @@ class GradioUI:
         self.question_session_state = {}
         self.summary_session_state = {}
         self.qa_session_state = {}    
-    def upload_file(self, file) -> Tuple[str, str]:
-        """Upload file and return asset ID and status message"""
+        
+    def upload_file(self, file) -> Tuple[str, str, str]:
+        """Upload file and return asset ID, status message, and extracted text"""
         if file is None:
-            return "", "❌ Please select a file to upload"
+            return "", "❌ Please select a file to upload", ""
         
         try:
             # Set timeout for large file uploads (5 minutes)
@@ -87,16 +97,45 @@ class GradioUI:
             if response.status_code == 200:
                 result = response.json()
                 asset_id = result["id"]
-                return asset_id, f"✅ File uploaded successfully!\n📁 Asset ID: {asset_id}\n📄 File: {file.name.split('/')[-1]}"
+                
+                # Fetch the extracted text
+                extracted_text = self.get_extracted_text(asset_id)
+                
+                status_msg = f"✅ File uploaded successfully!\n📁 Asset ID: {asset_id}\n📄 File: {file.name.split('/')[-1]}"
+                return asset_id, status_msg, extracted_text
             else:
-                return "", f"❌ Upload failed: {response.text}"
+                return "", f"❌ Upload failed: {response.text}", ""
                 
         except httpx.TimeoutException:
-            return "", "❌ Upload timed out. Please try with a smaller file or check your connection."
+            return "", "❌ Upload timed out. Please try with a smaller file or check your connection.", ""
         except httpx.ConnectError:
-            return "", "❌ Cannot connect to the API server. Please ensure the server is running."
+            return "", "❌ Cannot connect to the API server. Please ensure the server is running.", ""
         except Exception as e:
-            return "", f"❌ Error uploading file: {str(e)}"    
+            return "", f"❌ Error uploading file: {str(e)}", ""
+
+    def get_extracted_text(self, asset_id: str) -> str:
+        """Retrieve extracted text for a given asset ID"""
+        if not asset_id.strip():
+            return ""
+        
+        try:
+            timeout = httpx.Timeout(30.0, connect=10.0)
+            with httpx.Client(timeout=timeout) as client:
+                response = client.get(f"{API_BASE_URL}/get_extracted_text/{asset_id.strip()}")
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("extracted_text", "")
+            else:
+                return f"❌ Failed to retrieve extracted text: {response.text}"
+                
+        except httpx.TimeoutException:
+            return "❌ Request timed out while retrieving extracted text."
+        except httpx.ConnectError:
+            return "❌ Cannot connect to the API server."
+        except Exception as e:
+            return f"❌ Error retrieving extracted text: {str(e)}"
+        
     def start_question_session(self, asset_id: str, question_type: str) -> Tuple[str, str, str, str, str]:
         """Start a question generation session"""
         if not asset_id.strip():
@@ -112,8 +151,6 @@ class GradioUI:
                 result = response.json()
                 # print(f"Response from question generation: {result}")
                 state = result
-
-                # Store session state
                 self.question_session_state = {
                     "thread_id": state["thread_id"],
                     "asset_id": asset_id.strip(),
@@ -125,9 +162,7 @@ class GradioUI:
                 answer = state["data_for_feedback"].get("answer", "")
                 explanation = state["data_for_feedback"].get("explanation", "")
 
-                # Format options for display
-                options_text = "\n".join([f"{chr(65+i)}. {opt}" for i, opt in enumerate(options)]) if options else ""
-
+                options_text = "\n".join([f"{opt}" for i, opt in enumerate(options)]) if options else ""
                 status = f"✅ Question generated successfully!\n🎯 Type: {question_type}\n🔗 Session ID: {state['thread_id']}..."
                 return question, options_text, answer, explanation, status
             else:
@@ -167,8 +202,7 @@ class GradioUI:
                 answer = state["data_for_feedback"].get("answer", "")
                 explanation = state["data_for_feedback"].get("explanation", "")
 
-                options_text = "\n".join([f"{chr(65+i)}. {opt}" for i, opt in enumerate(options)]) if options else ""
-                
+                options_text = "\n".join([f"{opt}" for i, opt in enumerate(options)]) if options else ""
                 status = "✅ Question updated based on your feedback!"
                 return question, options_text, answer, explanation, status
             else:
@@ -180,6 +214,7 @@ class GradioUI:
             return "", "", "", "", "❌ Cannot connect to the API server. Please ensure the server is running."
         except Exception as e:
             return "", "", "", "", f"❌ Error updating question: {str(e)}"
+    
     def start_summary_session(self, asset_id: str):
         """Start a summary generation session with streaming"""
         if not asset_id.strip():
@@ -391,33 +426,50 @@ def create_gradio_interface():
             elem_classes="header"
         )
         
-        with gr.Tabs():
-            # Tab 1: File Upload
+        with gr.Tabs():            # Tab 1: File Upload
             with gr.Tab("📁 Upload Content", elem_id="upload-tab"):
                 gr.Markdown("### Upload PDF documents or audio/video files for processing")
                 
                 with gr.Row():
-                    with gr.Column(scale=2):
+                    with gr.Column(scale=1):
                         file_input = gr.File(
                             label="Select File",
                             file_types=[".pdf", ".mp3", ".mp4", ".wav", ".avi", ".mov", ".mkv", ".flv"],
                             elem_classes="upload-area"
                         )
                         upload_btn = gr.Button("🚀 Upload File", variant="primary", elem_classes="button-primary")
-                    
-                    with gr.Column(scale=1):
                         asset_id_display = gr.Textbox(
                             label="Generated Asset ID",
                             placeholder="Asset ID will appear here after upload...",
                             interactive=True,
                             lines=1
                         )
+                        
+                        with gr.Row():
+                            load_text_btn = gr.Button("📄 Load Extracted Text", variant="secondary", scale=2)
+                        
                         upload_status = gr.Markdown("📋 Ready to upload files")
+                    
+                    with gr.Column(scale=2):
+                        extracted_text_display = gr.Textbox(
+                            label="Extracted Text",
+                            placeholder="Extracted text will appear here after upload...",
+                            lines=15,
+                            max_lines=20,
+                            interactive=False,
+                            show_copy_button=True
+                        )
                   # Event handlers for upload tab
                 upload_btn.click(
                     fn=ui.upload_file,
                     inputs=[file_input],
-                    outputs=[asset_id_display, upload_status]
+                    outputs=[asset_id_display, upload_status, extracted_text_display]
+                )
+                
+                load_text_btn.click(
+                    fn=lambda asset_id: ("", ui.get_extracted_text(asset_id)) if asset_id.strip() else ("❌ Please enter an Asset ID", ""),
+                    inputs=[asset_id_display],
+                    outputs=[upload_status, extracted_text_display]
                 )
             
             # Tab 2: Question Generation
