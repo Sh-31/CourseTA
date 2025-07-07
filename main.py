@@ -4,7 +4,9 @@ from routes import file_processing_routes
 from routes import question_gen_routes
 from routes import summarizer_routes
 from routes import qa_routes
+from dotenv import load_dotenv
 
+load_dotenv() 
 app = FastAPI(
     title="CourseTA API",
     version="1.0.0",
